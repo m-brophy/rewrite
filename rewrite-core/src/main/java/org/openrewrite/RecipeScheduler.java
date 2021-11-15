@@ -269,7 +269,8 @@ public interface RecipeScheduler {
             }
         }
 
-        for (Recipe r : recipe.getRecipeList()) {
+        List<Recipe> recipeList = recipe.getRecipeList();
+        for (Recipe r : Collections.unmodifiableList(recipeList)) {
             if (ctx.getMessage(PANIC) != null) {
                 //noinspection unchecked
                 return (List<S>) afterWidened;
