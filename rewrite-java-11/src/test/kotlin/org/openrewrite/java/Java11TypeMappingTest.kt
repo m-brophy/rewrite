@@ -15,7 +15,7 @@
  */
 package org.openrewrite.java
 
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -23,20 +23,31 @@ import org.openrewrite.InMemoryExecutionContext
 import org.openrewrite.Issue
 import org.openrewrite.java.tree.J
 import org.openrewrite.java.tree.JavaType
+import java.util.concurrent.atomic.AtomicReference
 
 class Java11TypeMappingTest : JavaTypeMappingTest {
     companion object {
         private val goat = Java11TypeMappingTest::class.java.getResourceAsStream("/JavaTypeGoat.java")!!
             .bufferedReader().readText()
+
+        private val goatCu = JavaParser.fromJavaVersion()
+            .logCompilationWarningsAndErrors(true)
+            .build()
+            .parse(InMemoryExecutionContext { t -> fail(t) }, goat)[0]
     }
 
-    override fun goatType(): JavaType.Parameterized = JavaParser.fromJavaVersion()
-        .logCompilationWarningsAndErrors(true)
-        .build()
-        .parse(InMemoryExecutionContext { t -> fail(t) }, goat)[0]
-        .classes[0]
-        .type
-        .asParameterized()!!
+    override fun classType(fqn: String): JavaType.FullyQualified {
+        val type = AtomicReference<JavaType.FullyQualified>()
+        object : JavaVisitor<Int>() {
+            override fun visitClassDeclaration(classDecl: J.ClassDeclaration, p: Int): J {
+                if (classDecl.type?.fullyQualifiedName == fqn) {
+                    type.set(classDecl.type)
+                }
+                return super.visitClassDeclaration(classDecl, p)
+            }
+        }.visitNonNull(goatCu, 0)
+        return type.get()!!
+    }
 
     @Test
     fun noStackOverflowOnCapturedType() {
@@ -62,7 +73,7 @@ class Java11TypeMappingTest : JavaTypeMappingTest {
             .body!!.statements[0] as J.If)
             .ifCondition.tree as J.InstanceOf).expression as J.Identifier)
             .type as JavaType.Parameterized
-        Assertions.assertThat(pt).isNotNull
+        assertThat(pt).isNotNull
     }
 
     @Test
@@ -80,7 +91,7 @@ class Java11TypeMappingTest : JavaTypeMappingTest {
             .logCompilationWarningsAndErrors(false)
             .build()
             .parse(InMemoryExecutionContext { t -> fail(t) }, source)
-        Assertions.assertThat(cu).isNotNull
+        assertThat(cu).isNotNull
     }
 
     @Issue("https://github.com/openrewrite/rewrite/issues/1318")
@@ -115,58 +126,23 @@ class Java11TypeMappingTest : JavaTypeMappingTest {
             .logCompilationWarningsAndErrors(true)
             .build()
             .parse(InMemoryExecutionContext { t -> fail(t) }, source)
-        Assertions.assertThat(cu).isNotNull
-    }
-
-    @Issue("https://github.com/openrewrite/rewrite/issues/1327")
-    @Test
-    fun consistentSuperType() {
-        val sources: Array<String> = arrayOf("""
-            public abstract class TypeA<String> extends java.util.AbstractList<String> {}
-            """.trimIndent(), """
-            public abstract class TypeB<Integer> extends java.util.AbstractList<Integer> {}
-            """.trimIndent()
-        )
-        val cus = JavaParser.fromJavaVersion()
-            .logCompilationWarningsAndErrors(true)
-            .build()
-            .parse(InMemoryExecutionContext { t -> fail(t) }, *sources)
-
-        Assertions.assertThat(cus).isNotNull
-        val typeA = cus[0].classes[0].type!! as JavaType.Parameterized
-        val typeASuperType = typeA.supertype
-        val typeASuperSuperType = typeASuperType.supertype
-        val typeB = cus[1].classes[0].type!! as JavaType.Parameterized
-        val typeBSuperType = typeB.supertype
-        val typeBSuperSuperType = typeBSuperType.supertype
-
-        Assertions.assertThat(typeASuperSuperType).isNotNull
-        Assertions.assertThat(typeASuperSuperType!!.toString()).isEqualTo("java.util.AbstractCollection<Generic{E}>")
-        Assertions.assertThat(typeBSuperSuperType).isEqualTo(typeBSuperSuperType)
+        assertThat(cu).isNotNull
     }
 
     @Disabled
     @Issue("https://github.com/openrewrite/rewrite/issues/1349")
     @Test
     fun consistentEnumSuperType() {
-        val sources: Array<String> = arrayOf("""
-            public enum TypeA {}
-            """.trimIndent(), """
-            public enum TypeB {}
-            """.trimIndent()
-        )
-        val cus = JavaParser.fromJavaVersion()
-            .logCompilationWarningsAndErrors(true)
-            .build()
-            .parse(InMemoryExecutionContext { t -> fail(t) }, *sources)
+        val cus = JavaParser.fromJavaVersion().build()
+            .parse("enum TypeA {}", "enum TypeB {}")
 
-        Assertions.assertThat(cus).isNotNull
+        assertThat(cus).isNotNull
         val typeA = cus[0].classes[0].type!! as JavaType.Class
         val typeASuperType = typeA.supertype
         val typeB = cus[1].classes[0].type!! as JavaType.Class
         val typeBSuperType = typeB.supertype
 
-        Assertions.assertThat(typeASuperType).isNotNull
-        Assertions.assertThat(typeASuperType).isEqualTo(typeBSuperType)
+        assertThat(typeASuperType).isNotNull
+        assertThat(typeASuperType).isNotSameAs(typeBSuperType)
     }
 }

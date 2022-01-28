@@ -33,6 +33,8 @@ public interface JavaTypeSignatureBuilderTest {
      */
     Object firstMethodParameter(String methodName);
 
+    Object innerClassSignature(String innerClassSimpleName);
+
     /**
      * The type of the type variable of the last type parameter of {@link JavaTypeGoat}.
      */
@@ -156,5 +158,13 @@ public interface JavaTypeSignatureBuilderTest {
                 .isEqualTo("org.openrewrite.java.JavaTypeGoat$InheritedJavaTypeGoat");
         assertThat(methodSignature("inheritedJavaTypeGoat"))
                 .isEqualTo("org.openrewrite.java.JavaTypeGoat{name=inheritedJavaTypeGoat,return=org.openrewrite.java.JavaTypeGoat$InheritedJavaTypeGoat,parameters=[org.openrewrite.java.JavaTypeGoat$InheritedJavaTypeGoat]}");
+    }
+
+    @Test
+    default void extendsParameterizedTypeThatExtendsAnotherParameterizedType() {
+        assertThat(signatureBuilder().signature(innerClassSignature("ExtendsSuperParameterized")))
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat$ExtendsSuperParameterized<Generic{T}>");
+        assertThat(signatureBuilder().signature(innerClassSignature("ExtendsSuperParameterized2")))
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat$ExtendsSuperParameterized2<Generic{T2}>");
     }
 }

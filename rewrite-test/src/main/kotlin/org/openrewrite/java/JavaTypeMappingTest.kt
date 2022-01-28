@@ -18,6 +18,8 @@ package org.openrewrite.java
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
+import org.openrewrite.InMemoryExecutionContext
 import org.openrewrite.Issue
 import org.openrewrite.java.tree.Flag
 import org.openrewrite.java.tree.JavaType
@@ -27,10 +29,9 @@ import org.openrewrite.java.tree.JavaType.GenericTypeVariable.Variance.*
  * Based on type attribution mappings of [JavaTypeGoat].
  */
 interface JavaTypeMappingTest {
-    /**
-     * Type attribution for the [JavaTypeGoat] class.
-     */
-    fun goatType(): JavaType.Parameterized
+    fun classType(fqn: String): JavaType.FullyQualified = TODO()
+
+    fun goatType(): JavaType.Parameterized = classType("org.openrewrite.java.JavaTypeGoat").asParameterized()!!
 
     fun methodType(methodName: String): JavaType.Method {
         val type = goatType().methods.find { it.name == methodName }!!
@@ -197,5 +198,24 @@ interface JavaTypeMappingTest {
         val clazzMethod = methodType("clazz")
         assertThat(clazzMethod.annotations.size == 1)
         assertThat(clazzMethod.annotations.first().className == "AnnotationWithRuntimeRetention")
+    }
+
+    @Issue("https://github.com/openrewrite/rewrite/issues/1327")
+    @Test
+    fun parameterizedSuperSuperType() {
+        val p1 = classType("org.openrewrite.java.JavaTypeGoat${'$'}ExtendsSuperParameterized")
+        val p2 = classType("org.openrewrite.java.JavaTypeGoat${'$'}ExtendsSuperParameterized2")
+        val p3 = classType("org.openrewrite.java.JavaTypeGoat${'$'}ExtendsSuperParameterized3")
+
+        val ss1 = p1.supertype!!.supertype.asParameterized()!!
+        val ss2 = p2.supertype!!.supertype.asParameterized()!!
+        val ss3 = p3.supertype!!.supertype.asParameterized()!!
+
+        assertThat(ss1.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{}>")
+        assertThat(ss2.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{}>")
+        assertThat(ss1).isSameAs(ss2)
+
+        assertThat(ss3.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{}>")
+        assertThat(ss2).isNotSameAs(ss3)
     }
 }

@@ -57,6 +57,13 @@ public abstract class JavaTypeGoat<T, S extends PT<S> & C> {
     public abstract void enumType(EnumType enumType);
     public abstract<U extends PT<U> & C> InheritedJavaTypeGoat<T, U> inheritedJavaTypeGoat(InheritedJavaTypeGoat<T, U> inheritedJavaTypeGoat);
     public abstract T genericT(T n); // remove after signatures are common.
+
+    static class ExtendsSuperParameterized<T extends String> extends SuperParameterized<T> {}
+    static class ExtendsSuperParameterized2<T2 extends String> extends SuperParameterized<T2> {}
+    static class ExtendsSuperParameterized3<T3 extends Integer> extends SuperParameterized<T3> {}
+
+    static class SuperParameterized<U> extends SuperSuperParameterized<U> {}
+    static class SuperSuperParameterized<U> {}
 }
 
 interface C {
