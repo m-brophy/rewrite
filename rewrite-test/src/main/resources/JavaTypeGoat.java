@@ -40,6 +40,9 @@ public abstract class JavaTypeGoat<T, S extends PT<S> & C> {
     public static abstract class ImplementedPT implements PT<Object> { // explicitly bounded to Object
     }
 
+    public static abstract class TypeA {}
+    public static abstract class TypeB {}
+
     @AnnotationWithRuntimeRetention
     @AnnotationWithSourceRetention
     public abstract void clazz(C n);
@@ -58,9 +61,9 @@ public abstract class JavaTypeGoat<T, S extends PT<S> & C> {
     public abstract<U extends PT<U> & C> void inheritedJavaTypeGoat(InheritedJavaTypeGoat<T, U> inheritedJavaTypeGoat);
     public abstract T genericT(T n); // remove after signatures are common.
 
-    static class ExtendsSuperParameterized<T extends String> extends SuperParameterized<T> {}
-    static class ExtendsSuperParameterized2<T2 extends String> extends SuperParameterized<T2> {}
-    static class ExtendsSuperParameterized3<T3 extends Integer> extends SuperParameterized<T3> {}
+    static class ExtendsSuperParameterized<T extends JavaTypeGoat.TypeA> extends SuperParameterized<T> {}
+    static class ExtendsSuperParameterized2<T2 extends JavaTypeGoat.TypeA> extends SuperParameterized<T2> {}
+    static class ExtendsSuperParameterized3<T3 extends JavaTypeGoat.TypeB> extends SuperParameterized<T3> {}
 
     static class SuperParameterized<U> extends SuperSuperParameterized<U> {}
     static class SuperSuperParameterized<U> {}
