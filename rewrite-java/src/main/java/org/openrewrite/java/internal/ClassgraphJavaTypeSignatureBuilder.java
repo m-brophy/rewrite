@@ -115,7 +115,7 @@ public class ClassgraphJavaTypeSignatureBuilder implements JavaTypeSignatureBuil
             try {
                 return signature(typeVariableSignature.resolve()); // resolves to a TypeParameter
             } catch (IllegalArgumentException ignored) {
-                return "Generic{" + typeVariableSignature.getName() + "}";
+                return "Generic{}";
             }
         } else if (type instanceof TypeArgument) {
             return generic((TypeArgument) type);
@@ -183,12 +183,12 @@ public class ClassgraphJavaTypeSignatureBuilder implements JavaTypeSignatureBuil
 
             String boundsStr = bounds.toString();
             if (boundsStr.isEmpty()) {
-                return "Generic{" + typeParameter.getName() + "}";
+                return "Generic{}";
             }
-            return "Generic{" + typeParameter.getName() + " extends " + boundsStr + "}";
+            return "Generic{extends " + boundsStr + "}";
         }
 
-        return "Generic{" + name + "}";
+        return "Generic{}";
     }
 
     @Override

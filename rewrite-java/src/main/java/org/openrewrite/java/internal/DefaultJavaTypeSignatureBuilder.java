@@ -68,7 +68,8 @@ public class DefaultJavaTypeSignatureBuilder implements JavaTypeSignatureBuilder
     @Override
     public String genericSignature(Object type) {
         JavaType.GenericTypeVariable gtv = (JavaType.GenericTypeVariable) type;
-        StringBuilder s = new StringBuilder("Generic{" + gtv.getName());
+        boolean isWildcard = gtv.getName().equals("?"); // TODO: remove code for wildcards '?'.
+        StringBuilder s = new StringBuilder("Generic{" + (isWildcard ? "?" : ""));
 
         if (typeVariableNameStack == null) {
             typeVariableNameStack = new LinkedHashSet<>();
@@ -78,17 +79,14 @@ public class DefaultJavaTypeSignatureBuilder implements JavaTypeSignatureBuilder
             return s.toString();
         }
 
-//        System.out.println((gtv.getName() + " | " + (typeVariableNameStack == null ? "[]" : typeVariableNameStack.stream()
-//                .collect(Collectors.joining("->", "[", "]")))).toLowerCase());
-
         switch (gtv.getVariance()) {
             case INVARIANT:
                 break;
             case COVARIANT:
-                s.append(" extends ");
+                s.append(isWildcard ? " " : "").append("extends ");
                 break;
             case CONTRAVARIANT:
-                s.append(" super ");
+                s.append(isWildcard ? " " : "").append("super ");
                 break;
         }
 
@@ -116,8 +114,6 @@ public class DefaultJavaTypeSignatureBuilder implements JavaTypeSignatureBuilder
 
         String baseType = signature(pt.getType());
         StringBuilder s = new StringBuilder(baseType);
-
-//        System.out.println(baseType + "|" + System.identityHashCode(type));
 
         StringJoiner typeParameters = new StringJoiner(", ", "<", ">");
         for (JavaType typeParameter : pt.getTypeParameters()) {

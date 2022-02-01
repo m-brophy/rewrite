@@ -92,12 +92,12 @@ public class JavaReflectionTypeSignatureBuilder implements JavaTypeSignatureBuil
                 typeVariableNameStack = new HashSet<>();
             }
 
-            StringBuilder s = new StringBuilder("Generic{" + name);
+            StringBuilder s = new StringBuilder("Generic{");
             if (typeVariableNameStack.add(name)) {
                 if (typeVar.getBounds().length > 0) {
                     String boundsStr = genericBounds(typeVar.getBounds());
                     if (!boundsStr.isEmpty()) {
-                        s.append(" extends ").append(boundsStr);
+                        s.append("extends ").append(boundsStr);
                     }
                 }
             }

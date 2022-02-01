@@ -107,10 +107,10 @@ class Java11TypeSignatureBuilder implements JavaTypeSignatureBuilder {
         }
 
         if (!typeVariableNameStack.add(name)) {
-            return "Generic{" + name + "}";
+            return "Generic{}";
         }
 
-        StringBuilder s = new StringBuilder("Generic{").append(name);
+        StringBuilder s = new StringBuilder("Generic{");
 
         StringJoiner boundSigs = new StringJoiner(" & ");
         if (generic.getUpperBound() instanceof Type.IntersectionClassType) {
@@ -133,7 +133,7 @@ class Java11TypeSignatureBuilder implements JavaTypeSignatureBuilder {
 
         String boundSigStr = boundSigs.toString();
         if (!boundSigStr.isEmpty()) {
-            s.append(" extends ").append(boundSigStr);
+            s.append("extends ").append(boundSigStr);
         }
 
         typeVariableNameStack.remove(name);

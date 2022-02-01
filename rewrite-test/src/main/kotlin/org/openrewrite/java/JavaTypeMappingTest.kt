@@ -18,8 +18,6 @@ package org.openrewrite.java
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
-import org.openrewrite.InMemoryExecutionContext
 import org.openrewrite.Issue
 import org.openrewrite.java.tree.Flag
 import org.openrewrite.java.tree.JavaType
@@ -113,7 +111,6 @@ interface JavaTypeMappingTest {
     @Test
     fun genericMultipleBounds() {
         val generic = goatType().typeParameters.last().asGeneric()!!
-        assertThat(generic.name).isEqualTo("S")
         assertThat(generic.variance).isEqualTo(COVARIANT)
         assertThat(generic.bounds[0].asFullyQualified()!!.fullyQualifiedName).isEqualTo("org.openrewrite.java.PT")
         assertThat(generic.bounds[1].asFullyQualified()!!.fullyQualifiedName).isEqualTo("org.openrewrite.java.C")
@@ -123,7 +120,6 @@ interface JavaTypeMappingTest {
     fun genericUnbounded() {
         val generic =
             firstMethodParameter("genericUnbounded").asParameterized()!!.typeParameters[0] as JavaType.GenericTypeVariable
-        assertThat(generic.name).isEqualTo("U")
         assertThat(generic.variance).isEqualTo(INVARIANT)
         assertThat(generic.bounds).isEmpty()
     }
@@ -138,7 +134,6 @@ interface JavaTypeMappingTest {
         assertThat(generic.bounds[0].asArray()).isNotNull
 
         val elemType = generic.bounds[0].asArray()!!.elemType.asGeneric()!!
-        assertThat(elemType.name).isEqualTo("U")
         assertThat(elemType.variance).isEqualTo(COVARIANT)
         assertThat(elemType.bounds).hasSize(1)
     }
@@ -211,11 +206,11 @@ interface JavaTypeMappingTest {
         val ss2 = p2.supertype!!.supertype.asParameterized()!!
         val ss3 = p3.supertype!!.supertype.asParameterized()!!
 
-        assertThat(ss1.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{}>")
-        assertThat(ss2.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{}>")
+        assertThat(ss1.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{extends org.openrewrite.java.JavaTypeGoat${'$'}TypeA}>")
+        assertThat(ss2.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{extends org.openrewrite.java.JavaTypeGoat${'$'}TypeA}>")
         assertThat(ss1).isSameAs(ss2)
 
-        assertThat(ss3.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{}>")
+        assertThat(ss3.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{extends org.openrewrite.java.JavaTypeGoat${'$'}TypeB}>")
         assertThat(ss2).isNotSameAs(ss3)
     }
 }

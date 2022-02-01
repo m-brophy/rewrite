@@ -52,7 +52,7 @@ public class ClassgraphTypeMapping implements JavaTypeMapping<ClassInfo> {
         }
 
         String className = aClass.getName();
-        JavaType.FullyQualified clazz = (JavaType.FullyQualified) typeCache.get(className);
+        JavaType.FullyQualified clazz = typeCache.get(className);
 
         if (clazz == null) {
             JavaType.Class.Kind kind;
@@ -139,7 +139,7 @@ public class ClassgraphTypeMapping implements JavaTypeMapping<ClassInfo> {
         }
 
         String signature = signatureBuilder.signature(aClass.getTypeSignature());
-        JavaType.Parameterized parameterized = (JavaType.Parameterized) typeCache.get(signature);
+        JavaType.Parameterized parameterized = typeCache.get(signature);
         if (parameterized != null) {
             return parameterized;
         }
@@ -158,7 +158,7 @@ public class ClassgraphTypeMapping implements JavaTypeMapping<ClassInfo> {
 
     private JavaType type(HierarchicalTypeSignature typeSignature) {
         String signature = signatureBuilder.signature(typeSignature);
-        JavaType existing = (JavaType) typeCache.get(signature);
+        JavaType existing = typeCache.get(signature);
         if (existing != null) {
             return existing;
         }
@@ -185,7 +185,7 @@ public class ClassgraphTypeMapping implements JavaTypeMapping<ClassInfo> {
 
     private JavaType.Variable variableType(FieldInfo fieldInfo) {
         String signature = signatureBuilder.variableSignature(fieldInfo);
-        JavaType.Variable existing = (JavaType.Variable) typeCache.get(signature);
+        JavaType.Variable existing = typeCache.get(signature);
         if (existing != null) {
             return existing;
         }
@@ -213,7 +213,7 @@ public class ClassgraphTypeMapping implements JavaTypeMapping<ClassInfo> {
         long flags = methodInfo.getModifiers();
 
         String signature = signatureBuilder.methodSignature(methodInfo);
-        JavaType.Method existing = (JavaType.Method) typeCache.get(signature);
+        JavaType.Method existing = typeCache.get(signature);
         if (existing != null) {
             return existing;
         }
@@ -273,7 +273,7 @@ public class ClassgraphTypeMapping implements JavaTypeMapping<ClassInfo> {
     }
 
     private JavaType.GenericTypeVariable generic(TypeParameter typeParameter, String signature) {
-        JavaType.GenericTypeVariable gtv = new JavaType.GenericTypeVariable(null, typeParameter.getName(),
+        JavaType.GenericTypeVariable gtv = new JavaType.GenericTypeVariable(null, "",
                 INVARIANT, null);
         typeCache.put(signature, gtv);
 
@@ -372,7 +372,7 @@ public class ClassgraphTypeMapping implements JavaTypeMapping<ClassInfo> {
         }
 
         if (!classRefSignature.getTypeArguments().isEmpty()) {
-            JavaType existing = (JavaType) typeCache.get(signature);
+            JavaType existing = typeCache.get(signature);
             if (existing != null) {
                 return existing;
             }

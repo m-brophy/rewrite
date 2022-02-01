@@ -107,9 +107,9 @@ public interface JavaTypeSignatureBuilderTest {
     @Test
     default void genericT() {
         assertThat(signatureBuilder().signature(firstMethodParameter("genericT")))
-                .isEqualTo("Generic{T}");
+                .isEqualTo("Generic{}");
         assertThat(methodSignature("genericT"))
-                .isEqualTo("org.openrewrite.java.JavaTypeGoat{name=genericT,return=Generic{T},parameters=[Generic{T}]}");
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat{name=genericT,return=Generic{},parameters=[Generic{}]}");
     }
 
     @Test
@@ -123,23 +123,23 @@ public interface JavaTypeSignatureBuilderTest {
     @Test
     default void genericRecursiveInClassDefinition() {
         assertThat(signatureBuilder().signature(lastClassTypeParameter()))
-                .isEqualTo("Generic{S extends org.openrewrite.java.PT<Generic{S}> & org.openrewrite.java.C}");
+                .isEqualTo("Generic{extends org.openrewrite.java.PT<Generic{}> & org.openrewrite.java.C}");
     }
 
     @Test
     default void genericRecursiveInMethodDeclaration() {
         assertThat(signatureBuilder().signature(firstMethodParameter("genericRecursive")))
-                .isEqualTo("org.openrewrite.java.JavaTypeGoat<Generic{? extends Generic{U extends org.openrewrite.java.JavaTypeGoat<Generic{U}, Generic{?}>}[]}, Generic{?}>");
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat<Generic{? extends Generic{extends org.openrewrite.java.JavaTypeGoat<Generic{}, Generic{?}>}[]}, Generic{?}>");
         assertThat(methodSignature("genericRecursive"))
-                .isEqualTo("org.openrewrite.java.JavaTypeGoat{name=genericRecursive,return=org.openrewrite.java.JavaTypeGoat<Generic{? extends Generic{U extends org.openrewrite.java.JavaTypeGoat<Generic{U}, Generic{?}>}[]}, Generic{?}>,parameters=[org.openrewrite.java.JavaTypeGoat<Generic{? extends Generic{U extends org.openrewrite.java.JavaTypeGoat<Generic{U}, Generic{?}>}[]}, Generic{?}>]}");
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat{name=genericRecursive,return=org.openrewrite.java.JavaTypeGoat<Generic{? extends Generic{extends org.openrewrite.java.JavaTypeGoat<Generic{}, Generic{?}>}[]}, Generic{?}>,parameters=[org.openrewrite.java.JavaTypeGoat<Generic{? extends Generic{extends org.openrewrite.java.JavaTypeGoat<Generic{}, Generic{?}>}[]}, Generic{?}>]}");
     }
 
     @Test
     default void genericUnbounded() {
         assertThat(signatureBuilder().signature(firstMethodParameter("genericUnbounded")))
-            .isEqualTo("org.openrewrite.java.PT<Generic{U}>");
+            .isEqualTo("org.openrewrite.java.PT<Generic{}>");
         assertThat(methodSignature("genericUnbounded"))
-                .isEqualTo("org.openrewrite.java.JavaTypeGoat{name=genericUnbounded,return=org.openrewrite.java.PT<Generic{U}>,parameters=[org.openrewrite.java.PT<Generic{U}>]}");
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat{name=genericUnbounded,return=org.openrewrite.java.PT<Generic{}>,parameters=[org.openrewrite.java.PT<Generic{}>]}");
     }
 
     @Test
@@ -163,8 +163,8 @@ public interface JavaTypeSignatureBuilderTest {
     @Test
     default void extendsParameterizedTypeThatExtendsAnotherParameterizedType() {
         assertThat(signatureBuilder().signature(innerClassSignature("ExtendsSuperParameterized")))
-                .isEqualTo("org.openrewrite.java.JavaTypeGoat$ExtendsSuperParameterized<Generic{T}>");
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat$ExtendsSuperParameterized<Generic{extends org.openrewrite.java.JavaTypeGoat$TypeA}>");
         assertThat(signatureBuilder().signature(innerClassSignature("ExtendsSuperParameterized2")))
-                .isEqualTo("org.openrewrite.java.JavaTypeGoat$ExtendsSuperParameterized2<Generic{T2}>");
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat$ExtendsSuperParameterized2<Generic{extends org.openrewrite.java.JavaTypeGoat$TypeA}>");
     }
 }

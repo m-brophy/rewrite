@@ -115,9 +115,8 @@ class Java11TypeMapping implements JavaTypeMapping<Tree> {
     }
 
     private JavaType generic(Type.TypeVar type, String signature) {
-        String name = type.tsym.name.toString();
         JavaType.GenericTypeVariable gtv = new JavaType.GenericTypeVariable(null,
-                name, INVARIANT, null);
+                "", INVARIANT, null);
         typeCache.put(signature, gtv);
 
         List<JavaType> bounds = null;
