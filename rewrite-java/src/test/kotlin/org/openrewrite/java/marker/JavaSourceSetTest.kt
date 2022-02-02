@@ -32,7 +32,6 @@ import kotlin.math.pow
 
 class JavaSourceSetTest {
 
-    @Disabled("Temporary to get CI working")
     @Test
     fun typesFromClasspath() {
         val ctx = InMemoryExecutionContext { e -> throw e }
@@ -51,9 +50,10 @@ class JavaSourceSetTest {
                 override fun visit(javaType: JavaType?, p: Int): JavaType? {
                     if (javaType is JavaType) {
                         if (uniqueTypes.add(javaType)) {
-                            typeCacheAfterMapping.compute(javaType.toString()) { _, existing ->
+                            val signature = javaType.toString()
+                            typeCacheAfterMapping.compute(signature) { _, existing ->
                                 if (existing != null && javaType !== existing) {
-                                    signatureCollisions.compute(javaType.toString()) { _, acc -> (acc ?: 0) + 1 }
+                                    signatureCollisions.compute(signature) { _, acc -> (acc ?: 0) + 1 }
                                 }
                                 javaType
                             }
@@ -103,7 +103,6 @@ class JavaSourceSetTest {
             .isEmpty()
     }
 
-    @Disabled
     @Test
     fun typesByPackage() {
         val ctx = InMemoryExecutionContext { e -> throw e }

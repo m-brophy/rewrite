@@ -52,6 +52,9 @@ class Java11TypeMapping implements JavaTypeMapping<Tree> {
 
         String signature = signatureBuilder.signature(type);
         JavaType existing = typeCache.get(signature);
+        if("java.util.stream.BaseStream".equals(signature)) {
+            System.out.println("here");
+        }
         if (existing != null) {
             return existing;
         }

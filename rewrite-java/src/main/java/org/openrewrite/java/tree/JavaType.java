@@ -876,6 +876,9 @@ public interface JavaType {
         }
 
         public FullyQualified getDeclaringType() {
+            if(declaringType == null) {
+                System.out.println("declaringType is null");
+            }
             assert declaringType != null;
             return declaringType;
         }

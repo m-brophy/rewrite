@@ -29,6 +29,7 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.Opcodes;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.internal.MetricsHelper;
 import org.openrewrite.internal.StringUtils;
@@ -289,8 +290,9 @@ public class Java11Parser implements JavaParser {
     @Override
     public JavaSourceSet getSourceSet(ExecutionContext ctx) {
         if (sourceSetProvenance == null) {
-            sourceSetProvenance = JavaSourceSet.build(sourceSet, classpath == null ? emptyList() : classpath,
-                    typeCache, ctx);
+//            sourceSetProvenance = JavaSourceSet.build(sourceSet, classpath == null ? emptyList() : classpath,
+//                    typeCache, ctx);
+            sourceSetProvenance = new JavaSourceSet(Tree.randomId(), sourceSet, new ArrayList<>());
         }
         return sourceSetProvenance;
     }

@@ -22,14 +22,21 @@ import io.github.classgraph.ScanResult;
 import lombok.EqualsAndHashCode;
 import lombok.Value;
 import lombok.With;
+import org.intellij.lang.annotations.Language;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.internal.ClassgraphTypeMapping;
 import org.openrewrite.java.internal.JavaTypeCache;
+import org.openrewrite.java.tree.Flag;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.Statement;
 import org.openrewrite.marker.Marker;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.StreamSupport;
 
 import static java.util.Collections.emptyMap;
 import static org.openrewrite.Tree.randomId;
@@ -44,65 +51,81 @@ public class JavaSourceSet implements Marker {
     String name;
     List<JavaType.FullyQualified> classpath;
 
-    public static JavaSourceSet build(String sourceSetName, Iterable<Path> classpath,
-                                       JavaTypeCache typeCache, ExecutionContext ctx) {
-        Map<String, JavaType.FullyQualified> jvmClasses = jvmClasses(typeCache, ctx);
-        List<JavaType.FullyQualified> fqns = new ArrayList<>(jvmClasses.values());
-        ClassgraphTypeMapping typeMapping = new ClassgraphTypeMapping(typeCache, jvmClasses);
-
+    public static JavaSourceSet build(String sourceSetName, Collection<Path> classpath,
+                                      JavaTypeCache typeCache, ExecutionContext ctx) {
+        List<JavaType.FullyQualified> fqns;
         if (classpath.iterator().hasNext()) {
+
+            List<String> snippets = new ArrayList<>();
+            Map<String, List<String>> packagesToTypes = new HashMap<>();
             try (ScanResult scanResult = new ClassGraph()
                     .overrideClasspath(classpath)
-                    .enableAnnotationInfo()
                     .enableMemoryMapping()
                     .enableClassInfo()
-                    .enableMethodInfo()
-                    .enableFieldInfo()
                     .ignoreClassVisibility()
-                    .ignoreFieldVisibility()
-                    .ignoreMethodVisibility()
                     .scan()) {
-
                 for (ClassInfo classInfo : scanResult.getAllClasses()) {
-                    try {
-                        fqns.add(typeMapping.type(classInfo));
-                    } catch (Exception e) {
-                        ctx.getOnError().accept(e);
+                    // Skip private classes, allowing package-private
+                    if (classInfo.isAnonymousInnerClass() || classInfo.isPrivate()) {
+                        continue;
                     }
+
+                    // Need to handle inner classes somehow, exclude for now during development only
+                    if(classInfo.isInnerClass()) {
+                        continue;
+                    }
+                    String simpleName = classInfo.getPackageName().length() == 0 ?
+                            classInfo.getName() :
+                            classInfo.getName().substring(classInfo.getPackageName().length() + 1);
+                    if(simpleName.startsWith("-")) {
+                        // The Java compiler doesn't allow class names to start with "-", but the JVM will load them
+                        // So other compilers, like Kotlin, may emit class files with these names which we are unable to handle
+                        continue;
+                    }
+                    packagesToTypes.compute(classInfo.getPackageName(), (unused, acc) -> {
+                        if (acc == null) {
+                            acc = new ArrayList<>();
+                        }
+                        acc.add(simpleName);
+                        return acc;
+                    });
                 }
             }
+            for (Map.Entry<String, List<String>> packageToTypes : packagesToTypes.entrySet()) {
+                StringBuilder sb = new StringBuilder("package ").append(packageToTypes.getKey()).append(";\n")
+                        .append("class RewriteTypeStub {\n");
+
+                List<String> value = packageToTypes.getValue();
+                for (int i = 0; i < value.size(); i++) {
+                    String type = value.get(i);
+                    sb.append("    ").append(type).append(" t").append(i).append(";\n");
+                }
+                sb.append("}");
+                snippets.add(sb.toString());
+            }
+
+            JavaParser jp = JavaParser.fromJavaVersion()
+                    .typeCache(typeCache)
+                    .logCompilationWarningsAndErrors(true)
+                    .classpath(classpath)
+                    .build();
+            List<J.CompilationUnit> cus = new ArrayList<>(snippets.size());
+            cus.addAll(jp.parse(snippets.toArray(new String[]{})));
+            fqns = new ArrayList<>(snippets.size());
+            for (J.CompilationUnit cu : cus) {
+                List<Statement> statements = cu.getClasses().get(0).getBody().getStatements();
+                for(Statement s : statements) {
+                    JavaType.FullyQualified fq = ((J.VariableDeclarations)s).getTypeAsFullyQualified();
+                    if (fq == null) {
+                        continue;
+                    }
+                    fqns.add(fq);
+                }
+            }
+        } else {
+            fqns = Collections.emptyList();
         }
 
         return new JavaSourceSet(randomId(), sourceSetName, fqns);
-    }
-
-    private static Map<String, JavaType.FullyQualified> jvmClasses(JavaTypeCache javaTypeCache, ExecutionContext ctx) {
-        boolean java8 = System.getProperty("java.version").startsWith("1.8");
-
-        ClassInfoList classInfos;
-        try (ScanResult scanResult = new ClassGraph()
-                .enableMemoryMapping()
-                .enableAnnotationInfo()
-                .enableClassInfo()
-                .enableMethodInfo()
-                .enableFieldInfo()
-                .enableSystemJarsAndModules()
-                .acceptPackages("java")
-                .ignoreClassVisibility()
-                .ignoreFieldVisibility()
-                .ignoreMethodVisibility()
-                .scan()) {
-            classInfos = scanResult.getAllClasses();
-            ClassgraphTypeMapping builder = new ClassgraphTypeMapping(javaTypeCache, emptyMap());
-            Map<String, JavaType.FullyQualified> fqns = new HashMap<>(classInfos.size());
-            for (ClassInfo classInfo : classInfos) {
-                try {
-                    fqns.put(classInfo.getName(), builder.type(classInfo));
-                } catch (Exception e) {
-                    ctx.getOnError().accept(e);
-                }
-            }
-            return fqns;
-        }
     }
 }

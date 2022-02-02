@@ -40,7 +40,7 @@ dependencies {
 
     // For use in ClassGraphTypeMappingTest
     testRuntimeOnly("org.eclipse.persistence:org.eclipse.persistence.core:3.0.2")
-
+    testRuntimeOnly(project(":rewrite-java-11"))
     testRuntimeOnly("org.slf4j:jul-to-slf4j:1.7.+")
 }
 
