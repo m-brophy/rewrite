@@ -123,16 +123,15 @@ class Java11TypeMapping implements JavaTypeMapping<Tree> {
         List<JavaType> bounds = null;
         if (type.getUpperBound() instanceof Type.IntersectionClassType) {
             Type.IntersectionClassType intersectionBound = (Type.IntersectionClassType) type.getUpperBound();
-            if (intersectionBound.interfaces_field.length() > 0) {
-                bounds = new ArrayList<>(intersectionBound.interfaces_field.length());
-                for (Type bound : intersectionBound.interfaces_field) {
-                    bounds.add(type(bound));
-                }
-            } else if (intersectionBound.supertype_field != null) {
+            bounds = new ArrayList<>(intersectionBound.interfaces_field.length() + (intersectionBound.supertype_field == null ? 0 : 1));
+            if (intersectionBound.supertype_field != null) {
                 JavaType mappedBound = type(intersectionBound.supertype_field);
                 if (!(mappedBound instanceof JavaType.FullyQualified) || !((JavaType.FullyQualified) mappedBound).getFullyQualifiedName().equals("java.lang.Object")) {
-                    bounds = singletonList(mappedBound);
+                    bounds.add(mappedBound);
                 }
+            }
+            for (Type bound : intersectionBound.interfaces_field) {
+                bounds.add(type(bound));
             }
         } else if (type.getUpperBound() != null) {
             JavaType mappedBound = type(type.getUpperBound());

@@ -157,4 +157,13 @@ public interface JavaTypeSignatureBuilderTest {
         assertThat(methodSignature("inheritedJavaTypeGoat"))
                 .isEqualTo("org.openrewrite.java.JavaTypeGoat{name=inheritedJavaTypeGoat,return=org.openrewrite.java.JavaTypeGoat$InheritedJavaTypeGoat,parameters=[org.openrewrite.java.JavaTypeGoat$InheritedJavaTypeGoat]}");
     }
+
+    @Disabled("Temporarily disabled: only works on Java8 and Java11.")
+    @Test
+    default void genericIntersection() {
+        assertThat(signatureBuilder().signature(firstMethodParameter("genericIntersection")))
+                .isEqualTo("Generic{U extends org.openrewrite.java.JavaTypeGoat$TypeA & org.openrewrite.java.C}");
+        assertThat(methodSignature("genericIntersection"))
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat{name=genericIntersection,return=Generic{U extends org.openrewrite.java.JavaTypeGoat$TypeA & org.openrewrite.java.C},parameters=[Generic{U extends org.openrewrite.java.JavaTypeGoat$TypeA & org.openrewrite.java.C}]}");
+    }
 }

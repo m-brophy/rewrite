@@ -159,6 +159,14 @@ interface JavaTypeMappingTest {
         assertThat(clazz.fullyQualifiedName).isEqualTo("org.openrewrite.java.C${"$"}Inner")
     }
 
+    @Disabled("Temporarily disabled: only works on Java8 and Java11.")
+    @Test
+    fun genericIntersectionType() {
+        val clazz = firstMethodParameter("genericIntersection") as JavaType.GenericTypeVariable
+        assertThat(clazz.bounds.size).isEqualTo(2)
+        assertThat(clazz.toString()).isEqualTo("Generic{U extends org.openrewrite.java.JavaTypeGoat${"$"}TypeA & org.openrewrite.java.C}")
+    }
+
     @Disabled
     @Issue("https://github.com/openrewrite/rewrite/issues/1349")
     @Test
