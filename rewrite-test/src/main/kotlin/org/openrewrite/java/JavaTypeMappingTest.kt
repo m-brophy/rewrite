@@ -201,10 +201,12 @@ interface JavaTypeMappingTest {
         val p1 = classType("org.openrewrite.java.JavaTypeGoat${'$'}ExtendsSuperParameterized")
         val p2 = classType("org.openrewrite.java.JavaTypeGoat${'$'}ExtendsSuperParameterized2")
         val p3 = classType("org.openrewrite.java.JavaTypeGoat${'$'}ExtendsSuperParameterized3")
+        val p4 = classType("org.openrewrite.java.JavaTypeGoat${'$'}ExtendsSuperParameterized4")
 
         val ss1 = p1.supertype!!.supertype.asParameterized()!!
         val ss2 = p2.supertype!!.supertype.asParameterized()!!
         val ss3 = p3.supertype!!.supertype.asParameterized()!!
+        val ss4 = p4.supertype!!.supertype.asParameterized()!!
 
         assertThat(ss1.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{extends org.openrewrite.java.JavaTypeGoat${'$'}TypeA}>")
         assertThat(ss2.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{extends org.openrewrite.java.JavaTypeGoat${'$'}TypeA}>")
@@ -212,5 +214,7 @@ interface JavaTypeMappingTest {
 
         assertThat(ss3.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{extends org.openrewrite.java.JavaTypeGoat${'$'}TypeB}>")
         assertThat(ss2).isNotSameAs(ss3)
+
+        assertThat(ss4.toString()).isEqualTo("org.openrewrite.java.JavaTypeGoat${'$'}SuperSuperParameterized<Generic{}>")
     }
 }

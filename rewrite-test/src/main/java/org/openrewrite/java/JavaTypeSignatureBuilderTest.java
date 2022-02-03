@@ -166,5 +166,7 @@ public interface JavaTypeSignatureBuilderTest {
                 .isEqualTo("org.openrewrite.java.JavaTypeGoat$ExtendsSuperParameterized<Generic{extends org.openrewrite.java.JavaTypeGoat$TypeA}>");
         assertThat(signatureBuilder().signature(innerClassSignature("ExtendsSuperParameterized2")))
                 .isEqualTo("org.openrewrite.java.JavaTypeGoat$ExtendsSuperParameterized2<Generic{extends org.openrewrite.java.JavaTypeGoat$TypeA}>");
+        assertThat(signatureBuilder().signature(innerClassSignature("ExtendsSuperParameterized4")))
+                .isEqualTo("org.openrewrite.java.JavaTypeGoat$ExtendsSuperParameterized4");
     }
 }

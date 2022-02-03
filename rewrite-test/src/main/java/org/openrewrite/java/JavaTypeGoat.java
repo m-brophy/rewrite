@@ -65,6 +65,8 @@ public abstract class JavaTypeGoat<T, S extends PT<S> & C> {
     static class ExtendsSuperParameterized2<T2 extends TypeA> extends SuperParameterized<T2> {}
     static class ExtendsSuperParameterized3<T3 extends TypeB> extends SuperParameterized<T3> {}
 
+    class ExtendsSuperParameterized4 extends SuperParameterized<T> {}
+
     static class SuperParameterized<U> extends SuperSuperParameterized<U> {}
     static class SuperSuperParameterized<U> {}
 }
